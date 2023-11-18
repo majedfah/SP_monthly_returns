@@ -104,13 +104,14 @@
 
 function fetchAndDisplayData() {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://api.twelvedata.com/time_series?symbol=SPY&interval=1month&apikey=0917839f9a664b149bc0f98c16adce8b&start_date=2020-12-01', true);
+    xhr.open('GET', 'https://api.twelvedata.com/time_series?symbol=GSPC&interval=1month&apikey=0917839f9a664b149bc0f98c16adce8b&start_date=2020-12-01', true);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4 && xhr.status == 200) {
             var rawData = JSON.parse(xhr.responseText);
             var processedData = calculateMonthlyReturns(rawData);
             createChart(processedData);
         }
+
     };
     xhr.send();
 }
@@ -123,10 +124,9 @@ function calculateMonthlyReturns(data) {
     // Loop from the start if the data is ordered oldest to newest
     for (var i = 0; i < values.length - 1; i++) {
         var currentMonthData = values[i];
-        var nextMonthData = values[i + 1];
 
         var currentMonthOpen = parseFloat(currentMonthData.open);
-        var currentMonthClose = parseFloat(nextMonthData.close);
+        var currentMonthClose = parseFloat(currentMonthData.close);
 
         // Calculate the return based on the closing of the current month and the opening of the same month
         var monthlyReturn = ((currentMonthClose - currentMonthOpen) / currentMonthOpen) * 100;
@@ -143,169 +143,102 @@ function calculateMonthlyReturns(data) {
     return returns;
 }
 
-// function createChart(data) {
-//     Highcharts.chart('container', {
-//         chart: {
-//             type: 'line',
-//             backgroundColor: '#1C1C1E', // Set the chart background color to dark grey
-//             style: {
-//                 fontFamily: 'Robot' // Set the font for the chart
-//             }
-//         },
-//         title: {
-//             text: 'Monthly Returns',
-//             align: 'center',
-//             style: {
-//                 color: 'white', // Title color
-//                 fontSize: '20px' // Title font size
-//             }
-//         },
-//         xAxis: {
-//             type: 'datetime',
-//             labels: {
-//                 style: {
-//                     color: 'white' // X-axis label color
-//                 },
-//                 formatter: function() {
-//                     return Highcharts.dateFormat('%b \'%y', this.value);
-//                 }
-//             },
-//             lineColor: 'gray', // X-axis line color
-//             tickColor: 'gray', // X-axis tick color
-//             tickInterval: 30 * 24 * 3600 * 1000, // approximately one month
-//             startOnTick: true,
-//             endOnTick: true,
-//             showLastLabel: true
-//         },
-//         yAxis: {
-//             title: {
-//                 text: 'Monthly Return (%)',
-//                 style: {
-//                     color: 'white' // Y-axis title color
-//                 }
-//             },
-//             gridLineColor: 'gray', // Y-axis grid line color
-//             labels: {
-//                 style: {
-//                     color: 'white' // Y-axis label color
-//                 }
-//             }
-//         },
-//         legend: {
-//             itemStyle: {
-//                 color: 'white' // Legend text color
-//             }
-//         },
-//         plotOptions: {
-//             series: {
-//                 lineWidth: 2, // Line width
-//                 marker: {
-//                     enabled: false // Disable markers
-//                 }
-//             }
-//         },
-//         tooltip: {
-//             formatter: function() {
-//                 return Highcharts.dateFormat('%B %Y', this.x) +
-//                        ': <b>' + this.y.toFixed(2) + '%</b>';
-//             },
-//             style: {
-//                 color: 'white' // Adjust the tooltip text color as needed
-//             },
-//             backgroundColor: 'rgba(0, 0, 0, 0.75)', // Semi-transparent black for tooltip background
-//             borderColor: '#00ff00' // Green border to match the line color
-//         },
-//         series: [{
-//             name: 'S&P 500 Monthly Returns', // Adjust to match the name in the image
-//             data: data,
-//             color: '#00ff00', // Line color for S&P 500 TR, using a standard green hex code
 
-//         }, 
-//     ],
-//         credits: {
-//             enabled: false // Disable the Highcharts credits
-//         }
-//     });
-// }
+
+
 
 function createChart(data) {
     Highcharts.chart('container', {
         chart: {
-            type: 'line',
-            backgroundColor: '#1C1C1E', // Set the chart background color to dark grey
+            type: 'area', // Changed to 'area' for area fill beneath the line
+            backgroundColor: '#1C1C1E',
             style: {
-                fontFamily: 'Robot' // Set the font for the chart
-            }
+                fontFamily: 'Arial'
+            },
+            zoomType: 'x' // Optional: allows users to zoom into the x-axis
         },
         title: {
             text: 'Monthly Returns',
             align: 'center',
             style: {
-                color: 'white', // Title color
-                fontSize: '20px' // Title font size
+                color: '#E0E0E0',
+                fontSize: '23px'
             }
         },
         xAxis: {
             type: 'datetime',
             labels: {
                 style: {
-                    color: 'white' // X-axis label color
+                    color: 'white'
                 },
                 formatter: function() {
-                    // Display only the full year for January (first month), and month for July
                     var date = new Date(this.value);
-                    var month = date.getMonth() + 1; // Months are zero-based
+                    var month = date.getMonth() + 1;
                     var year = date.getFullYear();
                     if (month === 1) {
-                        return year; // Just the year for January
+                        return year;
                     } else if (month === 7) {
-                        return 'Jul'; // "Jul" for July
+                        return 'Jul';
                     }
-                    return ''; // No label for other months
+                    return '';
                 }
             },
             tickPositions: data.map(function(point) {
-                // Create a Date object for each point
                 var date = new Date(point[0]);
-                var month = date.getMonth() + 1; // Months are zero-based
-                // Set ticks for January and July
+                var month = date.getMonth() + 1;
                 if (month === 1 || month === 7) {
                     return point[0];
                 }
                 return null;
             }).filter(function(position) {
-                // Remove nulls (months that are not January or July)
                 return position !== null;
             }),
-            lineColor: 'gray', // X-axis line color
-            tickColor: 'gray', // X-axis tick color
-            // ... other xAxis configurations
+            lineColor: 'gray',
+            tickColor: 'gray'
         },
         yAxis: {
             title: {
                 text: 'Monthly Return (%)',
                 style: {
-                    color: 'white' // Y-axis title color
+                    color: '#E0E0E0' // Lighter color for better readability
                 }
             },
-            gridLineColor: 'gray', // Y-axis grid line color
+            gridLineColor: 'gray',
             labels: {
                 style: {
-                    color: 'white' // Y-axis label color
+                    color: 'white'
                 }
-            }
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080',
+                dashStyle: 'dash'
+            }],
+            min: -15, // Set the minimum value of y-axis
+            max: 15, // Set the maximum value of y-axis
+            // You can also use 'tickInterval' to control how often ticks appear
+            tickInterval: 5, // Set the interval of ticks to 5%
+            startOnTick: true, // Start the axis on a tick
+            endOnTick: true, // End the axis on a tick
         },
         legend: {
             itemStyle: {
-                color: 'white' // Legend text color
+                color: 'white'
             }
         },
         plotOptions: {
             series: {
-                lineWidth: 2, // Line width
+                lineWidth: 2,
                 marker: {
-                    enabled: false // Disable markers
-                }
+                    enabled: true // Enable markers
+                },
+                color: '#22C55E', // Green color for positive values
+                negativeColor: '#EF4444', // Red color for negative values
+                threshold: 0 // Set the threshold for color change
+            },
+            area: {
+                fillOpacity: 0.5 // Set opacity for area fill
             }
         },
         tooltip: {
@@ -314,23 +247,33 @@ function createChart(data) {
                        ': <b>' + this.y.toFixed(2) + '%</b>';
             },
             style: {
-                color: 'white' // Adjust the tooltip text color as needed
+                color: '#E0E0E0' // Lighter color for better readability
             },
-            backgroundColor: 'rgba(0, 0, 0, 0.75)', // Semi-transparent black for tooltip background
-            borderColor: '#00ff00' // Green border to match the line color
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            borderColor: '#00ff00'
         },
         series: [{
-            name: 'S&P 500 Monthly Returns', // Adjust to match the name in the image
+            name: 'S&P 500 Monthly Returns',
             data: data,
-            color: '#00ff00', // Line color for S&P 500 TR, using a standard green hex code
-
-        }, 
-    ],
+            fillColor: { // Gradient fill for area
+                linearGradient: [0, 0, 0, 300],
+                stops: [
+                    [0, 'rgba(34, 197, 94, 0.5)'], // Light green with opacity
+                    [1, 'rgba(34, 197, 94, 0)'] // Transparent for a smooth gradientetOpacity(0).get('rgba')] // Gradient end
+                ]
+            },
+            negativeFillColor: {
+                linearGradient: [0, 0, 0, 300],
+                stops: [
+                    [0, 'rgba(239, 68, 68, 0.5)'], // Light red with opacity
+                    [1, 'rgba(239, 68, 68, 0)'] // Transparent for a smooth gradient
+                ]
+            }
+        }],
         credits: {
-            enabled: false // Disable the Highcharts credits
+            enabled: false
         }
     });
 }
-
 // Call the function to execute
 fetchAndDisplayData();
