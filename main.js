@@ -104,7 +104,7 @@
 
 function fetchAndDisplayData() {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://api.twelvedata.com/time_series?symbol=GSPC&interval=1month&apikey=0917839f9a664b149bc0f98c16adce8b&start_date=2020-12-01', true);
+    xhr.open('GET', 'https://api.twelvedata.com/time_series?symbol=GSPC&interval=1month&apikey=0776e130fd24455184617a48e28d3b1f&start_date=2020-12-01', true);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4 && xhr.status == 200) {
             var rawData = JSON.parse(xhr.responseText);
@@ -119,7 +119,7 @@ function fetchAndDisplayData() {
 function calculateMonthlyReturns(data) {
     var values = data.values;
     var returns = [];
-    console.log(values);
+
 
     // Loop from the start if the data is ordered oldest to newest
     for (var i = 0; i < values.length - 1; i++) {
@@ -277,3 +277,80 @@ function createChart(data) {
 }
 // Call the function to execute
 fetchAndDisplayData();
+
+// daily price 
+// (async () => {
+//     const apiKey = '0776e130fd24455184617a48e28d3b1f'; // Replace with your API key
+//     const symbol = 'GSPC'; // SPY is an ETF that tracks the S&P 500
+//     const interval = '1day';
+//     const apiUrl = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${interval}&apikey=${apiKey}`;
+
+//     try {
+//         const response = await fetch(apiUrl);
+//         if (!response.ok) {
+//             throw new Error(`HTTP error! status: ${response.status}`);
+//         }
+//         const rawData = await response.json();
+//         const data = processDataForHighcharts(rawData);
+
+//         // Create the stock chart
+//         Highcharts.stockChart('container2', {
+//             rangeSelector: {
+//                 selected: 0
+//             },
+
+//             title: {
+//                 text: 'S&P 500 Stock Price'
+//             },
+
+//             series: [{
+//                 name: 'S&P 500',
+//                 data: data,
+//                 tooltip: {
+//                     valueDecimals: 2
+//                 }
+//             }],
+//             rangeSelector: {
+//                 buttons: [{
+//                     type: 'week',
+//                     count: 1,
+//                     text: '1w'
+//                 }, {
+//                     type: 'week',
+//                     count: 2,
+//                     text: '2w'
+//                 }, {
+//                     type: 'month',
+//                     count: 1,
+//                     text: '1m'
+//                 }],
+//                 selected: 2,
+//                 inputEnabled: false
+//             },
+            
+//         });
+//     } catch (error) {
+//         console.error('Error fetching data:', error);
+//     }
+    
+// })();
+
+// function processDataForHighcharts(data) {
+//     if (!data || !data.values) {
+//         console.error('Invalid data format:', data);
+//         return [];
+//     }
+//     console.log(data.values);
+
+//     return data.values.map(point => {
+//         return [
+//             new Date(point.datetime).getTime(), // Convert date to milliseconds
+//             parseFloat(point.close) // Convert the closing price to a float
+//         ];
+//     }).reverse(); // Reverse the array if the API returns data in descending order
+// }
+
+
+
+
+
